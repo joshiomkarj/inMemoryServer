@@ -10,12 +10,19 @@ import (
 
 // Api response struct
 type apiResponse struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
+	Status  int      `json:"status"`
+	Message []Server `json:"servers"`
+}
+
+type Server struct {
+	ID     string `json:"id"`
+	VMName string `json:"vmname"`
+	VMID   string `json:"vmid"`
+	CPU    string `json:"cpuutilization"`
 }
 
 // Send Api response function
-func sendApiResponse(w http.ResponseWriter, msg string, respCode int) {
+func sendApiResponse(w http.ResponseWriter, msg []Server, respCode int) {
 
 	// Set content type
 	w.Header().Set("Content-type", "application/json")
@@ -47,5 +54,5 @@ func GetServers(w http.ResponseWriter, r *http.Request) {
 
 	// Send +ve response
 	log.Printf("User details received: '%s'", req)
-	sendApiResponse(w, VMList[0], http.StatusOK)
+	sendApiResponse(w, VMList, http.StatusOK)
 }

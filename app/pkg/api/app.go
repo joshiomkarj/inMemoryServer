@@ -17,7 +17,9 @@ func (app *App) Initialize() {
 	app.SetRoutes()
 }
 
-var VMList = []string{"a", "b", "c", "d"}
+var vm1 = Server{ID: "1", VMName: "vm1", VMID: "123445", CPU: "80"}
+
+var VMList = []Server{vm1}
 
 func (app *App) Run() {
 	log.Println("Server started and listening for requests")
