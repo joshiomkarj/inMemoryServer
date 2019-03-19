@@ -7,8 +7,8 @@ import (
 func (app *App) SetRoutes() {
 	app.Get("/servers", GetServers)
 
-	/*app.Post("/servers", CreateServer)
-	app.Delete("/servers", DeleteServer)*/
+	app.Post("/servers", CreateServer)
+	/*app.Delete("/servers", DeleteServer)*/
 	app.Get("/servers/{id:[0-9]+}", GetServer)
 }
 

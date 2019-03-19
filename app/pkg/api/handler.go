@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -70,5 +71,29 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Request body is received: '%s'", req)
+	sendApiResponse(w, VMList, http.StatusOK)
+}
+
+// CreateServer returns a server based on id
+func CreateServer(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf("GetServers")
+	req := &rt.RegisterRequest{}
+	defer r.Body.Close()
+
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		msg := fmt.Sprintf("Failed to decode request body into JSON. Error: %s", err)
+		log.Printf("%s", msg)
+		return
+	}
+
+	log.Printf("Request body is received: '%+v'", req)
+	var vm = Server{
+		ID:     req.ID,
+		VMName: req.VMName,
+		VMID:   req.VMID,
+		CPU:    req.CPU,
+	}
+	VMList = append(VMList, vm)
 	sendApiResponse(w, VMList, http.StatusOK)
 }
