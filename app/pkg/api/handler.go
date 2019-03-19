@@ -41,7 +41,7 @@ func sendApiResponse(w http.ResponseWriter, msg []Server, respCode int) {
 	w.Write(response)
 }
 
-// GetServers
+// GetServers returns a list of vms
 func GetServers(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("GetServers")
@@ -49,10 +49,6 @@ func GetServers(w http.ResponseWriter, r *http.Request) {
 	req := &rt.RegisterRequest{}
 	defer r.Body.Close()
 
-	// errMsg
-	//errMsg := "Failed to list servers"
-
-	// Send +ve response
 	log.Printf("User details received: '%s'", req)
 	sendApiResponse(w, VMList, http.StatusOK)
 }
