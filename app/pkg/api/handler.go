@@ -77,7 +77,7 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 // CreateServer returns a server based on id
 func CreateServer(w http.ResponseWriter, r *http.Request) {
 
-	log.Printf("GetServers")
+	log.Printf("Create Server")
 	req := &rt.RegisterRequest{}
 	defer r.Body.Close()
 
@@ -95,5 +95,69 @@ func CreateServer(w http.ResponseWriter, r *http.Request) {
 		CPU:    req.CPU,
 	}
 	VMList = append(VMList, vm)
+	sendApiResponse(w, VMList, http.StatusOK)
+}
+
+// DeleteServer returns a server based on id
+func DeleteServer(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf("Delete Server")
+	vars := mux.Vars(r)
+	req := &rt.RegisterRequest{}
+	defer r.Body.Close()
+
+	var idx int
+	for i, vm := range VMList {
+		if vm.ID == vars["id"] {
+			log.Printf("The VM you're looking to delete is: %+v", vm)
+			idx = i
+		}
+	}
+
+	log.Printf("VMList: '%+v'", VMList)
+	VMList = append(VMList[:idx], VMList[idx+1:]...)
+	log.Printf("VMList: '%+v'", VMList)
+	log.Printf("Request body is received: '%s'", req)
+	sendApiResponse(w, VMList, http.StatusOK)
+}
+
+// PatchServer returns a server based on id
+func PatchServer(w http.ResponseWriter, r *http.Request) {
+
+	// Using PATCH instead of PUT because PUT requires an entire body to be sent
+	// effectively making PUT a subset of PATCH
+	log.Printf("Updates the vm")
+	vars := mux.Vars(r)
+	req := &rt.RegisterRequest{}
+	defer r.Body.Close()
+
+	var idx int
+	for i, vm := range VMList {
+		if vm.ID == vars["id"] {
+			log.Printf("The VM you're looking to update is: %+v", vm)
+			idx = i
+		}
+	}
+
+	log.Printf("r.Body: '%+v'", r.Body)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		msg := fmt.Sprintf("Failed to decode request body into JSON. Error: %s", err)
+		log.Printf("%s", msg)
+		return
+	}
+
+	vm := VMList[idx]
+	log.Printf("req: '%+v'", req)
+	log.Printf("VM: '%+v'", vm)
+	if req.VMName != "" {
+		vm.VMName = req.VMName
+	}
+	if req.CPU != "" {
+		vm.CPU = req.CPU
+	}
+
+	VMList[idx] = vm
+
+	log.Printf("Request body is received: '%+v'", req)
 	sendApiResponse(w, VMList, http.StatusOK)
 }
