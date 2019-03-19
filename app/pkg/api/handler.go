@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	rt "github.com/joshiomkarj/inMemoryServer/app/pkg/runtime"
 )
 
@@ -49,6 +50,25 @@ func GetServers(w http.ResponseWriter, r *http.Request) {
 	req := &rt.RegisterRequest{}
 	defer r.Body.Close()
 
-	log.Printf("User details received: '%s'", req)
+	log.Printf("Request body is received: '%s'", req)
+	sendApiResponse(w, VMList, http.StatusOK)
+}
+
+// GetServer returns a server based on id
+func GetServer(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf("GetServers")
+	vars := mux.Vars(r)
+	req := &rt.RegisterRequest{}
+	defer r.Body.Close()
+
+	log.Println("id of the VM you're looking for is: ", vars["id"])
+	for _, vm := range VMList {
+		if vm.ID == vars["id"] {
+			log.Printf("The VM you're looking for is: %+v", vm)
+		}
+	}
+
+	log.Printf("Request body is received: '%s'", req)
 	sendApiResponse(w, VMList, http.StatusOK)
 }

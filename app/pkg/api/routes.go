@@ -8,8 +8,8 @@ func (app *App) SetRoutes() {
 	app.Get("/servers", GetServers)
 
 	/*app.Post("/servers", CreateServer)
-	app.Delete("/servers", DeleteServer)
-	app.Post("/servers/{id:[0-9]+}", GetServers)*/
+	app.Delete("/servers", DeleteServer)*/
+	app.Get("/servers/{id:[0-9]+}", GetServer)
 }
 
 func (app *App) Post(path string, f func(w http.ResponseWriter, r *http.Request)) {
