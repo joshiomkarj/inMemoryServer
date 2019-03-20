@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"strconv"
+	"strings"
 
 	uuid "github.com/satori/go.uuid"
 
@@ -85,7 +88,7 @@ func returnOne(w http.ResponseWriter, servers Server, respCode int) {
 }
 
 // Send not found
-func returnNotFound(w http.ResponseWriter, respCode int) {
+func respondWithError(w http.ResponseWriter, respCode int) {
 	// Set content type
 	w.Header().Set("Content-type", "application/json")
 	// set response code
@@ -124,7 +127,7 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 	if idx != -1 {
 		returnOne(w, VMList[idx], http.StatusOK)
 	} else {
-		returnNotFound(w, http.StatusNotFound)
+		respondWithError(w, http.StatusNotFound)
 	}
 }
 
@@ -145,10 +148,24 @@ func CreateServer(w http.ResponseWriter, r *http.Request) {
 	var vm = Server{
 		VMName: req.VMName,
 		VMID:   uuid.NewV4().String(),
-		CPU:    req.CPU,
+		CPU:    strconv.Itoa(rand.Intn(100)) + "%",
 	}
-	VMList = append(VMList, vm)
-	sendApiResponse(w, VMList, http.StatusOK)
+	var vmAlreadyExists bool
+	log.Printf("vmlist is received: '%+v'", VMList)
+	for _, v := range VMList {
+		//if vm.VMName == vars["vmname"] {
+		if strings.Compare(v.VMName, vm.VMName) == 0 {
+			log.Printf("The VM with the same name already exists")
+			vmAlreadyExists = true
+		}
+	}
+
+	if vmAlreadyExists {
+		respondWithError(w, http.StatusConflict)
+	} else {
+		VMList = append(VMList, vm)
+		returnOne(w, vm, http.StatusOK)
+	}
 }
 
 // DeleteServer returns a server based on id
@@ -156,7 +173,6 @@ func DeleteServer(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Delete Server")
 	vars := mux.Vars(r)
-	req := &rt.RegisterRequest{}
 	defer r.Body.Close()
 
 	var idx int
@@ -170,7 +186,6 @@ func DeleteServer(w http.ResponseWriter, r *http.Request) {
 	log.Printf("VMList: '%+v'", VMList)
 	VMList = append(VMList[:idx], VMList[idx+1:]...)
 	log.Printf("VMList: '%+v'", VMList)
-	log.Printf("Request body is received: '%s'", req)
 	sendApiResponse(w, VMList, http.StatusOK)
 }
 
