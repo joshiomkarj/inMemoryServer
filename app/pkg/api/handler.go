@@ -24,7 +24,7 @@ type Server struct {
 }
 
 // Send Api response function
-func sendApiResponse(w http.ResponseWriter, msg []Server, respCode int) {
+func sendApiResponse(w http.ResponseWriter, servers []Server, respCode int) {
 
 	// Set content type
 	w.Header().Set("Content-type", "application/json")
@@ -33,7 +33,47 @@ func sendApiResponse(w http.ResponseWriter, msg []Server, respCode int) {
 	w.WriteHeader(respCode)
 
 	// Create response body
-	response, err := json.Marshal(apiResponse{Status: respCode, Message: msg})
+	response, err := json.Marshal(servers)
+	if err != nil {
+		log.Printf("Failed to create api response. Error: '%s'", err)
+		return
+	}
+
+	// set response body
+	w.Write(response)
+}
+
+// Send many objects function
+func returnMany(w http.ResponseWriter, servers []Server, respCode int) {
+
+	// Set content type
+	w.Header().Set("Content-type", "application/json")
+
+	// set response code
+	w.WriteHeader(respCode)
+
+	// Create response body
+	response, err := json.Marshal(servers)
+	if err != nil {
+		log.Printf("Failed to create api response. Error: '%s'", err)
+		return
+	}
+
+	// set response body
+	w.Write(response)
+}
+
+// Send one object response function
+func returnOne(w http.ResponseWriter, servers Server, respCode int) {
+
+	// Set content type
+	w.Header().Set("Content-type", "application/json")
+
+	// set response code
+	w.WriteHeader(respCode)
+
+	// Create response body
+	response, err := json.Marshal(servers)
 	if err != nil {
 		log.Printf("Failed to create api response. Error: '%s'", err)
 		return
@@ -45,33 +85,25 @@ func sendApiResponse(w http.ResponseWriter, msg []Server, respCode int) {
 
 // GetServers returns a list of vms
 func GetServers(w http.ResponseWriter, r *http.Request) {
-
 	log.Printf("GetServers")
-
-	req := &rt.RegisterRequest{}
 	defer r.Body.Close()
-
-	log.Printf("Request body is received: '%s'", req)
-	sendApiResponse(w, VMList, http.StatusOK)
+	returnMany(w, VMList, http.StatusOK)
 }
 
 // GetServer returns a server based on id
 func GetServer(w http.ResponseWriter, r *http.Request) {
-
 	log.Printf("GetServers")
 	vars := mux.Vars(r)
-	req := &rt.RegisterRequest{}
 	defer r.Body.Close()
 
-	log.Println("id of the VM you're looking for is: ", vars["id"])
-	for _, vm := range VMList {
+	idx := -1
+	for i, vm := range VMList {
 		if vm.ID == vars["id"] {
 			log.Printf("The VM you're looking for is: %+v", vm)
+			idx = i
 		}
 	}
-
-	log.Printf("Request body is received: '%s'", req)
-	sendApiResponse(w, VMList, http.StatusOK)
+	returnOne(w, VMList[idx], http.StatusOK)
 }
 
 // CreateServer returns a server based on id
