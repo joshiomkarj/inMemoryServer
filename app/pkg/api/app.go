@@ -17,7 +17,7 @@ func (app *App) Initialize() {
 	app.SetRoutes()
 }
 
-var vm1 = Server{ID: "1", VMName: "vm1", VMID: "123445", CPU: "80"}
+var vm1 = Server{VMName: "vm1", VMID: "3a2f9159-08f6-40df-9cd2-b37148dbbee", CPU: "80"}
 
 var VMList = []Server{vm1}
 

@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	uuid "github.com/satori/go.uuid"
+
 	"github.com/gorilla/mux"
 	rt "github.com/joshiomkarj/inMemoryServer/app/pkg/runtime"
 )
@@ -17,9 +19,8 @@ type apiResponse struct {
 }
 
 type Server struct {
-	ID     string `json:"id"`
 	VMName string `json:"vmname"`
-	VMID   string `json:"vmid"`
+	VMID   string `json:"id"`
 	CPU    string `json:"cpuutilization"`
 }
 
@@ -113,8 +114,9 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	defer r.Body.Close()
 	idx := -1
+	log.Println("Length of VMList is: ", len(VMList))
 	for i, vm := range VMList {
-		if vm.ID == vars["id"] {
+		if vm.VMID == vars["id"] {
 			log.Printf("The VM you're looking for is: %+v", vm)
 			idx = i
 		}
@@ -141,9 +143,8 @@ func CreateServer(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Request body is received: '%+v'", req)
 	var vm = Server{
-		ID:     req.ID,
 		VMName: req.VMName,
-		VMID:   req.VMID,
+		VMID:   uuid.NewV4().String(),
 		CPU:    req.CPU,
 	}
 	VMList = append(VMList, vm)
@@ -160,7 +161,7 @@ func DeleteServer(w http.ResponseWriter, r *http.Request) {
 
 	var idx int
 	for i, vm := range VMList {
-		if vm.ID == vars["id"] {
+		if vm.VMID == vars["id"] {
 			log.Printf("The VM you're looking to delete is: %+v", vm)
 			idx = i
 		}
@@ -185,7 +186,7 @@ func PatchServer(w http.ResponseWriter, r *http.Request) {
 
 	var idx int
 	for i, vm := range VMList {
-		if vm.ID == vars["id"] {
+		if vm.VMID == vars["id"] {
 			log.Printf("The VM you're looking to update is: %+v", vm)
 			idx = i
 		}
