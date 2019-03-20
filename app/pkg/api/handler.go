@@ -175,7 +175,7 @@ func CreateServer(w http.ResponseWriter, r *http.Request) {
 		respondWithHeadersOnly(w, http.StatusConflict)
 	} else {
 		VMList = append(VMList, vm)
-		returnOne(w, vm, http.StatusOK)
+		returnOne(w, vm, http.StatusCreated)
 	}
 }
 
