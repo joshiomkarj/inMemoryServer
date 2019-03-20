@@ -83,6 +83,23 @@ func returnOne(w http.ResponseWriter, servers Server, respCode int) {
 	w.Write(response)
 }
 
+// Send not found
+func returnNotFound(w http.ResponseWriter, respCode int) {
+	// Set content type
+	w.Header().Set("Content-type", "application/json")
+	// set response code
+	w.WriteHeader(respCode)
+	// Create response body
+	response, err := json.Marshal(nil)
+	if err != nil {
+		log.Printf("Failed to create api response. Error: '%s'", err)
+		return
+	}
+
+	// set response body
+	w.Write(response)
+}
+
 // GetServers returns a list of vms
 func GetServers(w http.ResponseWriter, r *http.Request) {
 	log.Printf("GetServers")
@@ -95,7 +112,6 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 	log.Printf("GetServers")
 	vars := mux.Vars(r)
 	defer r.Body.Close()
-
 	idx := -1
 	for i, vm := range VMList {
 		if vm.ID == vars["id"] {
@@ -103,7 +119,11 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 			idx = i
 		}
 	}
-	returnOne(w, VMList[idx], http.StatusOK)
+	if idx != -1 {
+		returnOne(w, VMList[idx], http.StatusOK)
+	} else {
+		returnNotFound(w, http.StatusNotFound)
+	}
 }
 
 // CreateServer returns a server based on id
