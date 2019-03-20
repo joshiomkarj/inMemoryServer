@@ -11,6 +11,7 @@ func (app *App) SetRoutes() {
 	app.Delete("/servers/{id}", DeleteServer)
 	app.Get("/servers/{id}", GetServer)
 	app.Get("/servers/{id}/status", GetServerStatus)
+	app.Get("/check/{name}", CheckName)
 
 	// Using PATCH instead of PUT because PUT requires an entire body to be sent
 	// effectively making PUT a subset of PATCH

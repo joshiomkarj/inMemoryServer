@@ -84,7 +84,7 @@ func returnOne(w http.ResponseWriter, servers Server, respCode int) {
 }
 
 // Send not found
-func respondWithError(w http.ResponseWriter, respCode int) {
+func respondWithHeadersOnly(w http.ResponseWriter, respCode int) {
 	// Set content type
 	w.Header().Set("Content-type", "application/json")
 	// set response code
@@ -122,7 +122,7 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 	if idx != -1 {
 		returnOne(w, VMList[idx], http.StatusOK)
 	} else {
-		respondWithError(w, http.StatusNotFound)
+		respondWithHeadersOnly(w, http.StatusNotFound)
 	}
 }
 
@@ -139,12 +139,13 @@ func GetServerStatus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	VMList[idx].VMName = ""
-	VMList[idx].VMID = ""
+	vm := VMList[idx]
+	vm.VMName = ""
+	vm.VMID = ""
 	if idx != -1 {
-		returnOne(w, VMList[idx], http.StatusOK)
+		returnOne(w, vm, http.StatusOK)
 	} else {
-		respondWithError(w, http.StatusNotFound)
+		respondWithHeadersOnly(w, http.StatusNotFound)
 	}
 }
 
@@ -167,21 +168,54 @@ func CreateServer(w http.ResponseWriter, r *http.Request) {
 		VMID:   uuid.NewV4().String(),
 		CPU:    strconv.Itoa(rand.Intn(100)) + "%",
 	}
-	var vmAlreadyExists bool
-	log.Printf("vmlist is received: '%+v'", VMList)
-	for _, v := range VMList {
-		//if vm.VMName == vars["vmname"] {
-		if strings.Compare(v.VMName, vm.VMName) == 0 {
-			log.Printf("The VM with the same name already exists")
-			vmAlreadyExists = true
-		}
-	}
+
+	vmAlreadyExists := isExistsVM(vm.VMName)
 
 	if vmAlreadyExists {
-		respondWithError(w, http.StatusConflict)
+		respondWithHeadersOnly(w, http.StatusConflict)
 	} else {
 		VMList = append(VMList, vm)
 		returnOne(w, vm, http.StatusOK)
+	}
+}
+
+func isExistsVM(vmname string) bool {
+	log.Printf("vmlist is received: '%+v'", VMList)
+	for _, v := range VMList {
+		//if vm.VMName == vars["vmname"] {
+		if strings.Compare(v.VMName, vmname) == 0 {
+			log.Printf("The VM with the same name already exists")
+			return true
+		}
+	}
+	return false
+}
+
+func isVMForbidden(vmname string) bool {
+	for _, name := range ForbiddenList {
+		if strings.Compare(name, vmname) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// CheckName checks whether vm with the name already exists
+func CheckName(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf("Check name availibility")
+	vars := mux.Vars(r)
+	defer r.Body.Close()
+
+	vmname := vars["name"]
+	vmAlreadyExists := isExistsVM(vmname)
+
+	if vmAlreadyExists {
+		respondWithHeadersOnly(w, http.StatusConflict)
+	} else if isVMForbidden(vmname) {
+		respondWithHeadersOnly(w, http.StatusForbidden)
+	} else {
+		respondWithHeadersOnly(w, http.StatusOK)
 	}
 }
 
