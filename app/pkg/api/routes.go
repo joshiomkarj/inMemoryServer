@@ -10,6 +10,7 @@ func (app *App) SetRoutes() {
 	app.Post("/servers", CreateServer)
 	app.Delete("/servers/{id}", DeleteServer)
 	app.Get("/servers/{id}", GetServer)
+	app.Get("/servers/{id}/status", GetServerStatus)
 
 	// Using PATCH instead of PUT because PUT requires an entire body to be sent
 	// effectively making PUT a subset of PATCH

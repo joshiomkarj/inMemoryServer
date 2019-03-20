@@ -22,9 +22,9 @@ type apiResponse struct {
 }
 
 type Server struct {
-	VMName string `json:"vmname"`
-	VMID   string `json:"id"`
-	CPU    string `json:"cpuutilization"`
+	VMName string `json:"vmname,omitempty"`
+	VMID   string `json:"id,omitempty"`
+	CPU    string `json:"cpuutilization,omitempty"`
 }
 
 // Send Api response function
@@ -69,20 +69,16 @@ func returnMany(w http.ResponseWriter, servers []Server, respCode int) {
 
 // Send one object response function
 func returnOne(w http.ResponseWriter, servers Server, respCode int) {
-
 	// Set content type
 	w.Header().Set("Content-type", "application/json")
-
 	// set response code
 	w.WriteHeader(respCode)
-
 	// Create response body
 	response, err := json.Marshal(servers)
 	if err != nil {
 		log.Printf("Failed to create api response. Error: '%s'", err)
 		return
 	}
-
 	// set response body
 	w.Write(response)
 }
@@ -113,17 +109,38 @@ func GetServers(w http.ResponseWriter, r *http.Request) {
 
 // GetServer returns a server based on id
 func GetServer(w http.ResponseWriter, r *http.Request) {
-	log.Printf("GetServers")
+	log.Printf("GetServer")
 	vars := mux.Vars(r)
 	defer r.Body.Close()
 	idx := -1
-	log.Println("Length of VMList is: ", len(VMList))
 	for i, vm := range VMList {
 		if vm.VMID == vars["id"] {
 			log.Printf("The VM you're looking for is: %+v", vm)
 			idx = i
 		}
 	}
+	if idx != -1 {
+		returnOne(w, VMList[idx], http.StatusOK)
+	} else {
+		respondWithError(w, http.StatusNotFound)
+	}
+}
+
+// GetServer returns a server based on id
+func GetServerStatus(w http.ResponseWriter, r *http.Request) {
+	log.Printf("GetServerStatus")
+	vars := mux.Vars(r)
+	defer r.Body.Close()
+	idx := -1
+	for i, vm := range VMList {
+		if vm.VMID == vars["id"] {
+			log.Printf("The VM you're looking for is: %+v", vm)
+			idx = i
+		}
+	}
+
+	VMList[idx].VMName = ""
+	VMList[idx].VMID = ""
 	if idx != -1 {
 		returnOne(w, VMList[idx], http.StatusOK)
 	} else {
